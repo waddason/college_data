@@ -29,15 +29,22 @@ if "df_init" not in st.session_state:
 eval(st.session_state["logo"])
 
 region_list: list[str] = list(st.session_state["df_init"]["region_academique"].unique())
-region_name: str = st.selectbox("Choix de la région académique", region_list)
+
 
 # display the Region table
 # if region_name is None:
 #     st.stop()
 
+# Chose the region from a side bar
+with st.sidebar:
+    region_name: str = st.selectbox("Choix de la région académique", region_list)
+
+# update the session state
 sub_df = st.session_state["df_init"][
     st.session_state["df_init"]["region_academique"] == region_name
 ]
+
+
 cols_to_display = st.columns(2)
 
 # column de gauche
