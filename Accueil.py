@@ -75,84 +75,85 @@ def __main__():
         )
 
     st.subheader("Analyse des genres par niveau")
-    st.write(
-        "Le tableau ci-dessus présente le ratio de filles par niveau par région académique en 2022."
-    )
-    df_2022_gender = df_2022.groupby(["region_academique"])[
-        [
-            "nombre_eleves_total",
-            "6eme_total",
-            "6eme_filles",
-            "5eme_total",
-            "5eme_filles",
-            "4eme_total",
-            "4eme_filles",
-            "3eme_total",
-            "3eme_filles",
-        ]
-    ].sum()
-    # create the gender ratios for each level by region
-    df_2022_gender["6eme_ratio"] = (
-        100 * df_2022_gender["6eme_filles"] / df_2022_gender["6eme_total"]
-    )
-    df_2022_gender["5eme_ratio"] = (
-        100 * df_2022_gender["5eme_filles"] / df_2022_gender["5eme_total"]
-    )
-    df_2022_gender["4eme_ratio"] = (
-        100 * df_2022_gender["4eme_filles"] / df_2022_gender["4eme_total"]
-    )
-    df_2022_gender["3eme_ratio"] = (
-        100 * df_2022_gender["3eme_filles"] / df_2022_gender["3eme_total"]
-    )
-    percent_format = st.column_config.NumberColumn(
-        help="ratio de filles par niveau",
-        format="%.2f %%",
-    )
-
-    st.dataframe(
-        data=df_2022_gender[
+    with st.expander("Description des genres par région"):
+        st.write(
+            "Le tableau ci-dessus présente le ratio de filles par niveau par région académique en 2022."
+        )
+        df_2022_gender = df_2022.groupby(["region_academique"])[
             [
+                "nombre_eleves_total",
+                "6eme_total",
+                "6eme_filles",
+                "5eme_total",
+                "5eme_filles",
+                "4eme_total",
+                "4eme_filles",
+                "3eme_total",
+                "3eme_filles",
+            ]
+        ].sum()
+        # create the gender ratios for each level by region
+        df_2022_gender["6eme_ratio"] = (
+            100 * df_2022_gender["6eme_filles"] / df_2022_gender["6eme_total"]
+        )
+        df_2022_gender["5eme_ratio"] = (
+            100 * df_2022_gender["5eme_filles"] / df_2022_gender["5eme_total"]
+        )
+        df_2022_gender["4eme_ratio"] = (
+            100 * df_2022_gender["4eme_filles"] / df_2022_gender["4eme_total"]
+        )
+        df_2022_gender["3eme_ratio"] = (
+            100 * df_2022_gender["3eme_filles"] / df_2022_gender["3eme_total"]
+        )
+        percent_format = st.column_config.NumberColumn(
+            help="ratio de filles par niveau",
+            format="%.2f %%",
+        )
+
+        st.dataframe(
+            data=df_2022_gender[
+                [
+                    "6eme_ratio",
+                    "5eme_ratio",
+                    "4eme_ratio",
+                    "3eme_ratio",
+                ]
+            ],
+            column_config={
+                "6eme_ratio": percent_format,
+                "5eme_ratio": percent_format,
+                "4eme_ratio": percent_format,
+                "3eme_ratio": percent_format,
+            },
+        )
+        # plot this
+        df_2022_gender.reset_index(inplace=True)
+        unpivoted_df = pd.melt(
+            df_2022_gender,
+            id_vars=["region_academique"],  # Columns to keep as identifiers
+            value_vars=[
                 "6eme_ratio",
                 "5eme_ratio",
                 "4eme_ratio",
                 "3eme_ratio",
-            ]
-        ],
-        column_config={
-            "6eme_ratio": percent_format,
-            "5eme_ratio": percent_format,
-            "4eme_ratio": percent_format,
-            "3eme_ratio": percent_format,
-        },
-    )
-    # plot this
-    df_2022_gender.reset_index(inplace=True)
-    unpivoted_df = pd.melt(
-        df_2022_gender,
-        id_vars=["region_academique"],  # Columns to keep as identifiers
-        value_vars=[
-            "6eme_ratio",
-            "5eme_ratio",
-            "4eme_ratio",
-            "3eme_ratio",
-        ],  # Columns to unpivot
-        var_name="class_level",  # Name for the new variable column
-        value_name="ratio",  # Name for the new value column
-    )
-    unpivoted_df["niveau"] = (
-        unpivoted_df["region_academique"] + " - " + unpivoted_df["class_level"]
-    )
-    st.dataframe(unpivoted_df[["niveau", "ratio"]])
+            ],  # Columns to unpivot
+            var_name="class_level",  # Name for the new variable column
+            value_name="ratio",  # Name for the new value column
+        )
+        unpivoted_df["niveau"] = (
+            unpivoted_df["region_academique"] + " - " + unpivoted_df["class_level"]
+        )
+        st.dataframe(unpivoted_df[["niveau", "ratio"]])
 
-    st.bar_chart(
-        data=unpivoted_df[["niveau", "ratio"]],
-        x="niveau",
-        y="ratio",
-        y_label="Niveau",
-        x_label="Ratio de filles (%)",
-        horizontal=True,
-        stack=None,
-    )
+        st.bar_chart(
+            data=unpivoted_df[["niveau", "ratio"]],
+            x="niveau",
+            y="ratio",
+            y_label="Niveau",
+            x_label="Ratio de filles (%)",
+            horizontal=True,
+            stack=None,
+        )
 
 
 if __name__ == "__main__":
