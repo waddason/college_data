@@ -23,7 +23,7 @@ if "df_init" not in st.session_state:
     print("Data not loaded")
     st.stop()
 
-# If here, the session is correctly initialize, display logo
+# If here, the session is correctly initialize, display logo and the rest of the page
 eval(st.session_state["logo"])
 region_list: list[str] = list(st.session_state["df_init"]["region_academique"].unique())
 
@@ -37,17 +37,28 @@ sub_df = st.session_state["df_init"][
 ]
 # Create the national metrics:
 with st.expander("Statistiques nationales"):
-    df_national = (
-        st.session_state["df_init"].groupby("region_academique").sum().reset_index()
+    df_national = st.session_state["df_init"].drop(
+        "rentree_scolaire",
+        "region_academique",
+        "academie",
+        "departement",
+        "commune",
+        "numero_college",
+        "denomination_principale",
+        "patronyme",
+        "secteur",
     )
-    df_national
+    df_national = df_national.groupby("region_academique").sum().reset_index()
+    # add the national row with the mean
+    df_national = df_national.append(df_national.mean(), ignore_index=True)
+    st.dataframe(df_national)
 
 
 # Display some stats
 col_1, col_2 = st.columns(2)
 
 # column de gauche
-with cols_1:
+with col_1:
     st.subheader("Statistiques globales")
     st.write(f"Nombre d'élèves total: {sub_df['nombre_eleves_total'].sum()}")
     st.write(f"Nombre de collèges: {sub_df['numero_college'].nunique()}")
@@ -55,7 +66,7 @@ with cols_1:
 
 
 # column de droite
-with cols_2:
+with col_2:
     st.subheader("Genre")
     st.metric("dont ulis", sub_df["nombre_eleves_ulis"].sum())
 
