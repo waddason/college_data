@@ -59,20 +59,20 @@ def __main__():
     load_and_cache_data()
     df = st.session_state["df_init"]
     df_2022 = df[df["rentree_scolaire"] == 2022]
-
-    st.dataframe(
-        df_2022.groupby(["region_academique"])[
-            [
-                "nombre_eleves_total",
-                "6eme_total",
-                "5eme_total",
-                "4eme_total",
-                "3eme_total",
+    with st.expander("Description des régions"):
+        st.dataframe(
+            df_2022.groupby(["region_academique"])[
+                [
+                    "nombre_eleves_total",
+                    "6eme_total",
+                    "5eme_total",
+                    "4eme_total",
+                    "3eme_total",
+                ]
             ]
-        ]
-        .sum()
-        .sort_values(by="nombre_eleves_total", ascending=False)
-    )
+            .sum()
+            .sort_values(by="nombre_eleves_total", ascending=False)
+        )
 
     st.subheader("Analyse des genres par niveau")
     st.write(
