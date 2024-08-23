@@ -10,7 +10,7 @@
 ###############################################################################
 import streamlit as st
 import pandas as pd
-
+import numpy as np
 
 ###############################################################################
 # Importing own modules and data
@@ -73,7 +73,7 @@ def __main__():
             .sum()
             .sort_values(by="nombre_eleves_total", ascending=False)
         )
-
+    # -------------------------------------------------------------------------
     st.subheader("Analyse des genres par niveau")
     with st.expander("Description des genres par région"):
         st.write(
@@ -154,6 +154,51 @@ def __main__():
             horizontal=True,
             stack=None,
         )
+    # -------------------------------------------------------------------------
+    st.subheader("Localisation des collèges en 2022")
+    df_loc = df_2022[["code_postal", "numero_college", "nombre_eleves_total"]]
+    # Normalize the postal code but keep the 75xxx
+    df_loc["CP_corrige"] = np.where(
+        (df_loc["code_postal"] >= 7500) & (df_loc["code_postal"] < 80000),
+        df_loc["code_postal"],
+        (df_loc["code_postal"] // 10) * 10,
+    )
+    # df_loc["CP_corrige"] = df_loc["code_postal"]
+    df_loc = df_loc.drop(columns=["code_postal"])
+    df_loc["numero_college"] = 1
+    df_loc = (
+        df_loc.groupby("CP_corrige")[["numero_college", "nombre_eleves_total"]]
+        .sum()
+        .reset_index()
+    )
+    df_loc.columns = ["code_postal", "nombre_colleges", "nombre_eleves_total"]
+    # st.dataframe(df_loc)
+
+    df_cp_loc = pd.read_csv("./data/CP_centroid.csv")
+    df_to_map = pd.merge(df_loc, df_cp_loc, on="code_postal")
+    # create the colors
+    df_colors = df_2022["region_academique"].drop_duplicates().reset_index()
+    df_colors = df_colors.drop(columns=["index"])
+    # df_colors["color"] = np.random.rand(len(df_colors["region_academique"]), 4).tolist()
+    # set alpha to 0.8
+    df_colors["color"] = np.hstack(
+        (
+            np.random.rand(len(df_colors["region_academique"]), 3),
+            np.full((len(df_colors["region_academique"]), 1), 0.8),
+        )
+    ).tolist()
+    # st.dataframe(df_colors)
+
+    df_to_map = df_to_map.merge(
+        df_2022[["code_postal", "region_academique"]].drop_duplicates(),
+        on="code_postal",
+    )
+    df_to_map = df_to_map.merge(df_colors, on="region_academique")
+
+    st.map(data=df_to_map, size="nombre_eleves_total", color="color")
+
+    with st.expander("data"):
+        st.dataframe(df_to_map)
 
 
 if __name__ == "__main__":
