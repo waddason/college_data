@@ -38,16 +38,19 @@ sub_df = st.session_state["df_init"][
 # Create the national metrics:
 with st.expander("Statistiques nationales"):
     df_national = st.session_state["df_init"].drop(
-        "rentree_scolaire",
-        "region_academique",
-        "academie",
-        "departement",
-        "commune",
-        "numero_college",
-        "denomination_principale",
-        "patronyme",
-        "secteur",
+        columns=[
+            "rentree_scolaire",
+            "region_academique",
+            "academie",
+            "departement",
+            "commune",
+            "numero_college",
+            "denomination_principale",
+            "patronyme",
+            "secteur",
+        ],
     )
+
     df_national = df_national.groupby("region_academique").sum().reset_index()
     # add the national row with the mean
     df_national = df_national.append(df_national.mean(), ignore_index=True)
