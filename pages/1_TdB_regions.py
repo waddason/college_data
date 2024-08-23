@@ -14,10 +14,8 @@ import streamlit as st
 ###############################################################################
 # Main
 ###############################################################################
-
-
 st.title("Statistiques par région")
-st.header("Description des régions")
+st.header(f"Tableau de bord de {st.session_state["df_init"]["region_academique"]}")
 
 if "df_init" not in st.session_state:
     st.warning("Data not loaded, please go to the homepage first")
@@ -25,15 +23,9 @@ if "df_init" not in st.session_state:
     print("Data not loaded")
     st.stop()
 
-# logo
+# If here, the session is correctly initialize, display logo
 eval(st.session_state["logo"])
-
 region_list: list[str] = list(st.session_state["df_init"]["region_academique"].unique())
-
-
-# display the Region table
-# if region_name is None:
-#     st.stop()
 
 # Chose the region from a side bar
 with st.sidebar:
@@ -43,12 +35,19 @@ with st.sidebar:
 sub_df = st.session_state["df_init"][
     st.session_state["df_init"]["region_academique"] == region_name
 ]
+# Create the national metrics:
+with st.expander("Statistiques nationales"):
+    df_national = (
+        st.session_state["df_init"].groupby("region_academique").sum().reset_index()
+    )
+    df_national
 
 
-cols_to_display = st.columns(2)
+# Display some stats
+col_1, col_2 = st.columns(2)
 
 # column de gauche
-with cols_to_display[0]:
+with cols_1:
     st.subheader("Statistiques globales")
     st.write(f"Nombre d'élèves total: {sub_df['nombre_eleves_total'].sum()}")
     st.write(f"Nombre de collèges: {sub_df['numero_college'].nunique()}")
@@ -56,7 +55,7 @@ with cols_to_display[0]:
 
 
 # column de droite
-with cols_to_display[1]:
+with cols_2:
     st.subheader("Genre")
     st.metric("dont ulis", sub_df["nombre_eleves_ulis"].sum())
 
